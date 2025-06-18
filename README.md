@@ -1,7 +1,5 @@
 Reusable GitHub Actions workflows for working with [Toucan](https://github.com/toucansites/toucan).
 
----
-
 ## Workflows
 
 ### `deploy.yml`
