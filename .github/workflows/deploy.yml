@@ -1,0 +1,57 @@
+name: Build and Deploy with Toucan
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-page:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare cache and output directories
+        run: |
+          mkdir -p ./cache
+          chmod -R 777 ./cache
+          mkdir -p ./dist
+          chmod -R 777 ./dist
+
+      - name: Run Toucan container and build site
+        run: |
+          docker create \
+            --mount type=bind,source=${{ github.workspace }},target=/site \
+            --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
+            -w /site \
+            --name toucan-build \
+            toucansites/toucan generate \
+            ./src \
+            /tmp/output
+
+          docker start --attach toucan-build
+
+      - name: Copy generated site from container to host
+        run: |
+          docker cp toucan-build:/tmp/output/. ./dist
+          docker rm toucan-build
+
+      - name: Upload static site to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy-page:
+    needs: build-page
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
