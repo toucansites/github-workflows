@@ -7,6 +7,7 @@ on:
           description: 'Toucan Docker image tag to use'
           required: false
           default: 'latest'
+          type: string
 
 permissions:
   contents: read
