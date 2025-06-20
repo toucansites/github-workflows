@@ -2,6 +2,11 @@ name: Build and Deploy with Toucan
 
 on:
   workflow_call:
+    inputs:
+        version:
+          description: 'Toucan Docker image tag to use'
+          required: false
+          default: 'latest'
 
 permissions:
   contents: read
@@ -22,6 +27,24 @@ jobs:
           mkdir -p ./dist
           chmod -R 777 ./dist
 
+      - name: Resolve Docker tag
+        id: docker-tag
+        run: |
+          VERSION_INPUT="${{ inputs.version }}"
+          
+          if [ -n "$VERSION_INPUT" ]; then
+            if curl --silent --fail "https://registry.hub.docker.com/v2/repositories/toucansites/toucan/tags/${VERSION_INPUT}" > /dev/null; then
+              echo "Toucan Docker tag '${VERSION_INPUT}' found."
+              echo "tag=${VERSION_INPUT}" >> $GITHUB_OUTPUT
+            else
+              echo "::warning::Toucan Docker tag '${VERSION_INPUT}' not found. Falling back to 'latest'."
+              echo "tag=latest" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "No version input provided. Using 'latest'."
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Toucan container and build site
         run: |
           docker create \
@@ -29,7 +52,7 @@ jobs:
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
             -w /site \
             --name toucan-build \
-            toucansites/toucan generate \
+            toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
             ./src \
             /tmp/output
 
