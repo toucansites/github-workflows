@@ -25,7 +25,7 @@ jobs:
       pages: write
       id-token: write
     with:
-      version: v1.2.3 # Optional – see Inputs section below
+      version : "1.0.0-beta.4"
 ```
 
 > Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
