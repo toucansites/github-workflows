@@ -34,7 +34,7 @@ jobs:
 
 | Name     | Description                                                | Required | Default  |
 |----------|------------------------------------------------------------|----------|----------|
-| `version` | Docker image tag to use for the Toucan container (e.g. `1.0.0-beta.4` or `latest`) | No       | `latest` |
+| `version` | Docker image tag to use | No       | `latest` |
 
 If no `version` is specified, the workflow will default to using the `latest` tag of the Docker image.
 
