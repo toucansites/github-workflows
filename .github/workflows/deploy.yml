@@ -11,7 +11,7 @@ on:
       config:
         description: 'Optional environment variables as key/value map'
         required: false
-        type: map
+        type: string
 
 permissions:
   contents: read
@@ -52,15 +52,17 @@ jobs:
 
       - name: Run Toucan container and build site
         run: |
-          CONFIG_JSON='${{ toJson(inputs.config) }}'
           ENV_ARGS=""
 
-          if [ "$CONFIG_JSON" != "null" ] && [ "$CONFIG_JSON" != "{}" ]; then
-            while IFS="=" read -r key value; do
-              key=$(echo "$key" | tr -d '"')
-              value=$(echo "$value" | tr -d '"')
-              ENV_ARGS+=" -e ${key}=${value}"
-            done < <(echo "$CONFIG_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+          # DO NOT PRINT config VALUES
+          if [ -n "${{ inputs.config }}" ]; then
+            echo "${{ inputs.config }}" | while IFS='=' read -r key value; do
+              key=$(echo "$key" | xargs)   #Trim spaces
+              value=$(echo "$value" | xargs)
+              if [ -n "$key" ]; then
+                ENV_ARGS+=" -e ${key}=${value}"
+              fi
+            done
           fi
 
           docker create \
