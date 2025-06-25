@@ -23,6 +23,8 @@ jobs:
 
       - name: Prepare cache and output directories
         run: |
+          mkdir -p ./cache
+          chmod -R 777 ./cache
           mkdir -p ./dist
           chmod -R 777 ./dist
 
