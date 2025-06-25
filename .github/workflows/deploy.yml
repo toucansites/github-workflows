@@ -23,8 +23,6 @@ jobs:
 
       - name: Prepare cache and output directories
         run: |
-          mkdir -p ./cache
-          chmod -R 777 ./cache
           mkdir -p ./dist
           chmod -R 777 ./dist
 
@@ -51,6 +49,7 @@ jobs:
           docker create \
             --mount type=bind,source=${{ github.workspace }},target=/site \
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
+            --mount type=bind,source=${{ github.workspace }}/dist,target=/site/dist \
             -w /site \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
@@ -61,7 +60,7 @@ jobs:
 
       - name: Copy generated site from container to host
         run: |
-          docker cp toucan-build:/site/output/. ./dist
+          docker cp toucan-build:/site/dist/. ./dist
           docker rm toucan-build
 
       - name: Upload static site to GitHub Pages
