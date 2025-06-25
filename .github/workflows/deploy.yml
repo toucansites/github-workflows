@@ -3,11 +3,15 @@ name: Build and Deploy with Toucan
 on:
   workflow_call:
     inputs:
-        version:
-          description: 'Toucan Docker image tag to use'
-          required: false
-          default: 'latest'
-          type: string
+      version:
+        description: 'Toucan Docker image tag to use'
+        required: false
+        default: 'latest'
+        type: string
+      config:
+        description: 'Optional environment variables as key/value map'
+        required: false
+        type: map
 
 permissions:
   contents: read
@@ -48,10 +52,22 @@ jobs:
 
       - name: Run Toucan container and build site
         run: |
+          CONFIG_JSON='${{ toJson(inputs.config) }}'
+          ENV_ARGS=""
+
+          if [ "$CONFIG_JSON" != "null" ] && [ "$CONFIG_JSON" != "{}" ]; then
+            while IFS="=" read -r key value; do
+              key=$(echo "$key" | tr -d '"')
+              value=$(echo "$value" | tr -d '"')
+              ENV_ARGS+=" -e ${key}=${value}"
+            done < <(echo "$CONFIG_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"')
+          fi
+
           docker create \
             --mount type=bind,source=${{ github.workspace }},target=/site \
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
             -w /site \
+            $ENV_ARGS \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
             . \
