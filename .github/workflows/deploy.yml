@@ -54,7 +54,7 @@ jobs:
             -w /site \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
-            ./dist \
+            ./src \
             /tmp/output
 
           docker start --attach toucan-build
