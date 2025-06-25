@@ -61,7 +61,7 @@ jobs:
 
       - name: Copy generated site from container to host
         run: |
-          docker cp toucan-build:/site/dist/. ./dist
+          docker cp toucan-build:/tmp/output/. ./dist
           docker rm toucan-build
 
       - name: Upload static site to GitHub Pages
