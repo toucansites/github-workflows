@@ -51,11 +51,10 @@ jobs:
           docker create \
             --mount type=bind,source=${{ github.workspace }},target=/site \
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
-            --mount type=bind,source=${{ github.workspace }}/dist,target=/site/dist \
             -w /site \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
-            ./dist \
+            ./src \
             /tmp/output
 
           docker start --attach toucan-build
