@@ -28,8 +28,8 @@ jobs:
       version: "1.0.0-beta.5"
       target: "github-deploy"
       config: |
-        SWIFTINIT_ACCOUNT=${{ secrets.SWIFTINIT_ACCOUNT }}
-        SWIFTINIT_API_KEY=${{ secrets.SWIFTINIT_API_KEY }}
+        KEY1=${{ secrets.VALUE1 }}
+        KEY2=${{ secrets.VALUE2 }}
 ```
 
 > **Note:** Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
