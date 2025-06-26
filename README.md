@@ -27,9 +27,6 @@ jobs:
     with:
       version: "1.0.0-beta.5"
       target: "github-deploy"
-      config: |
-        KEY1=${{ secrets.VALUE1 }}
-        KEY2=${{ secrets.VALUE2 }}
 ```
 
 > **Note:** Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
@@ -42,7 +39,6 @@ jobs:
 |----------|------------------------------------------------------------|----------|-----------------|
 | `version` | Toucan Docker image tag to use                             | No       | `latest`        |
 | `target`  | Toucan build target (used with `--target`)                 | No       | *(none)*        |
-| `config`  | Key/value environment pairs in `KEY=VALUE` format (multi-line string) | No | *(none)* |
 
 ---
 

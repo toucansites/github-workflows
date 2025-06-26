@@ -8,10 +8,6 @@ on:
         required: false
         default: 'latest'
         type: string
-      config:
-        description: 'Optional environment variables as key/value map'
-        required: false
-        type: string
       target:
         description: 'Toucan build target to use (optional)'
         required: false
@@ -55,19 +51,6 @@ jobs:
 
       - name: Run Toucan container and build site
         run: |
-          ENV_ARGS=""
-
-          # Process key=value pairs into -e env var flags
-          if [ -n "${{ inputs.config }}" ]; then
-            echo "${{ inputs.config }}" | while IFS='=' read -r key value; do
-              key=$(echo "$key" | xargs)
-              value=$(echo "$value" | xargs)
-              if [ -n "$key" ]; then
-                ENV_ARGS+=" -e ${key}=${value}"
-              fi
-            done
-          fi
-
           # Build the optional target argument
           TARGET_ARG=""
           if [ -n "${{ inputs.target }}" ]; then
@@ -78,7 +61,6 @@ jobs:
             --mount type=bind,source=${{ github.workspace }},target=/site \
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
             -w /site \
-            $ENV_ARGS \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
             . \
