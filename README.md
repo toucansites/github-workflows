@@ -6,7 +6,7 @@ Builds a static site using Toucan in Docker and deploys it to GitHub Pages.
 
 ---
 
-## ✅ Usage
+## Usage
 
 Example GitHub Actions workflow:
 
@@ -32,7 +32,7 @@ jobs:
         SWIFTINIT_API_KEY=${{ secrets.SWIFTINIT_API_KEY }}
 ```
 
-> ✅ **Note:** Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
+> **Note:** Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
 
 ---
 
