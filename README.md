@@ -68,7 +68,7 @@ toucan generate . --target github-deploy
 
 ### Option 2: Define a default target in `toucan.yml`
 
-```yml
+```yaml
 targets:
   - name: github-deploy
     default: true
@@ -85,7 +85,7 @@ targets:
 > **Important:**  
 > The selected target **must** define an explicit output path:
 >
-> ```yml
+> ```yaml
 > output: /tmp/output
 > ```
 >
@@ -93,6 +93,17 @@ targets:
 > If it's missing, the deployment will fail because no files will be found to upload.
 
 ---
+
+### Version Requirement for `targets`
+
+> **Toucan targets require version `1.0.0-beta.5` or `latest`.**  
+> If you're using an older image (e.g., `beta.4`), the `targets` will be ignored and build output will not work as expected.  
+> Be sure to set:
+>
+> ```yaml
+> with:
+>   version: "1.0.0-beta.5"  # or "latest"
+> ```
 
 ## Cache Directory
 
