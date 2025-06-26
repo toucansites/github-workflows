@@ -3,11 +3,19 @@ name: Build and Deploy with Toucan
 on:
   workflow_call:
     inputs:
-        version:
-          description: 'Toucan Docker image tag to use'
-          required: false
-          default: 'latest'
-          type: string
+      version:
+        description: 'Toucan Docker image tag to use'
+        required: false
+        default: 'latest'
+        type: string
+      config:
+        description: 'Optional environment variables as key/value map'
+        required: false
+        type: string
+      target:
+        description: 'Toucan build target to use (optional)'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -32,8 +40,7 @@ jobs:
         id: docker-tag
         run: |
           VERSION_INPUT="${{ inputs.version }}"
-          
-          if [ -n "$VERSION_INPUT" ]; then
+          if [ -n "$VERSION_INPUT" ] && [ "$VERSION_INPUT" != "latest" ]; then
             if curl --silent --fail "https://registry.hub.docker.com/v2/repositories/toucansites/toucan/tags/${VERSION_INPUT}" > /dev/null; then
               echo "Toucan Docker tag '${VERSION_INPUT}' found."
               echo "tag=${VERSION_INPUT}" >> $GITHUB_OUTPUT
@@ -42,20 +49,40 @@ jobs:
               echo "tag=latest" >> $GITHUB_OUTPUT
             fi
           else
-            echo "No version input provided. Using 'latest'."
+            echo "No version input provided or version is 'latest'. Using 'latest'."
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
       - name: Run Toucan container and build site
         run: |
+          ENV_ARGS=""
+
+          # Process key=value pairs into -e env var flags
+          if [ -n "${{ inputs.config }}" ]; then
+            echo "${{ inputs.config }}" | while IFS='=' read -r key value; do
+              key=$(echo "$key" | xargs)
+              value=$(echo "$value" | xargs)
+              if [ -n "$key" ]; then
+                ENV_ARGS+=" -e ${key}=${value}"
+              fi
+            done
+          fi
+
+          # Build the optional target argument
+          TARGET_ARG=""
+          if [ -n "${{ inputs.target }}" ]; then
+            TARGET_ARG="--target ${{ inputs.target }}"
+          fi
+
           docker create \
             --mount type=bind,source=${{ github.workspace }},target=/site \
             --mount type=bind,source=${{ github.workspace }}/cache,target=/site/cache \
             -w /site \
+            $ENV_ARGS \
             --name toucan-build \
             toucansites/toucan:${{ steps.docker-tag.outputs.tag }} generate \
-            ./src \
-            /tmp/output
+            . \
+            $TARGET_ARG
 
           docker start --attach toucan-build
 
