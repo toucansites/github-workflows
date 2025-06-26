@@ -1,14 +1,14 @@
-Reusable GitHub Actions workflows for working with [Toucan](https://github.com/toucansites/toucan).
+# Reusable GitHub Actions Workflows for [Toucan](https://github.com/toucansites/toucan)
 
-## Workflows
-
-### `deploy.yml`
+## `deploy.yml`
 
 Builds a static site using Toucan in Docker and deploys it to GitHub Pages.
 
-#### Usage
+---
 
-Example github action:
+## ✅ Usage
+
+Example GitHub Actions workflow:
 
 ```yaml
 name: Build and Deploy with Toucan
@@ -25,22 +25,78 @@ jobs:
       pages: write
       id-token: write
     with:
-      version : "1.0.0-beta.4"
+      version: "1.0.0-beta.5"
+      target: "github-deploy"
+      config: |
+        SWIFTINIT_ACCOUNT=${{ secrets.SWIFTINIT_ACCOUNT }}
+        SWIFTINIT_API_KEY=${{ secrets.SWIFTINIT_API_KEY }}
 ```
 
-> Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
+> ✅ **Note:** Ensure GitHub Pages is enabled and set to deploy from GitHub Actions.
 
-#### Inputs
+---
 
-| Name     | Description                                                | Required | Default  |
-|----------|------------------------------------------------------------|----------|----------|
-| `version` | Docker image tag to use | No       | `latest` |
+## Inputs
 
-If no `version` is specified, the workflow will default to using the `latest` tag of the Docker image.
+| Name     | Description                                                | Required | Default         |
+|----------|------------------------------------------------------------|----------|-----------------|
+| `version` | Toucan Docker image tag to use                             | No       | `latest`        |
+| `target`  | Toucan build target (used with `--target`)                 | No       | *(none)*        |
+| `config`  | Key/value environment pairs in `KEY=VALUE` format (multi-line string) | No | *(none)* |
 
-#### Cache directory
+---
 
-A `cache` directory is set up during the build so that [transformers](https://toucansites.com/docs/rendering/transformers/) can make use of it.
+## Target Configuration Options
+
+Toucan supports **multiple build targets** (e.g. `dev`, `live`, `preview`, `github-deploy`).  
+There are **two ways to use a target** with this workflow:
+
+### Option 1: Specify the target explicitly
+
+Set the `target` name in the GitHub Actions workflow:
+
+```yaml
+with:
+  target: "github-deploy"
+```
+
+This instructs the workflow to run:
+
+```bash
+toucan generate . --target github-deploy
+```
+
+### Option 2: Define a default target in `toucan.yml`
+
+```yml
+targets:
+  - name: github-deploy
+    default: true
+    output: /tmp/output
+    url: "https://binarybirds.com/"
+```
+
+[Toucan](https://github.com/toucansites/toucan) will automatically use this default target if no `--target` is provided.
+
+---
+
+### Required: `output: /tmp/output`
+
+> **Important:**  
+> The selected target **must** define an explicit output path:
+>
+> ```yml
+> output: /tmp/output
+> ```
+>
+> The workflow expects the build output at this path inside the container.  
+> If it's missing, the deployment will fail because no files will be found to upload.
+
+---
+
+## Cache Directory
+
+A `cache` directory is created and mounted into the Docker container so [transformers](https://toucansites.com/docs/rendering/transformers/) can use it for optimization.
 
 ---
 

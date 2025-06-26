@@ -40,8 +40,7 @@ jobs:
         id: docker-tag
         run: |
           VERSION_INPUT="${{ inputs.version }}"
-          
-          if [ -n "$VERSION_INPUT" ]; then
+          if [ -n "$VERSION_INPUT" ] && [ "$VERSION_INPUT" != "latest" ]; then
             if curl --silent --fail "https://registry.hub.docker.com/v2/repositories/toucansites/toucan/tags/${VERSION_INPUT}" > /dev/null; then
               echo "Toucan Docker tag '${VERSION_INPUT}' found."
               echo "tag=${VERSION_INPUT}" >> $GITHUB_OUTPUT
@@ -50,7 +49,7 @@ jobs:
               echo "tag=latest" >> $GITHUB_OUTPUT
             fi
           else
-            echo "No version input provided. Using 'latest'."
+            echo "No version input provided or version is 'latest'. Using 'latest'."
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
