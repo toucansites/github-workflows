@@ -49,6 +49,44 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
+      - name: Restore Docker image cache (non-latest only)
+        if: ${{ steps.docker-tag.outputs.tag != 'latest' }}
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.docker-cache
+          key: docker-${{ runner.os }}-${{ steps.docker-tag.outputs.tag }}
+          restore-keys: |
+            docker-${{ runner.os }}-
+
+      - name: Prepare Docker cache directory
+        if: ${{ steps.docker-tag.outputs.tag != 'latest' }}
+        run: mkdir -p /tmp/.docker-cache
+
+      - name: Ensure Toucan image (load cache or pull)
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.docker-tag.outputs.tag }}"
+          IMAGE="toucansites/toucan:${TAG}"
+          CACHE_TAR="/tmp/.docker-cache/toucan-${TAG}.tar"
+
+          if [ "$TAG" != "latest" ] && [ -f "$CACHE_TAR" ]; then
+            echo "Loading cached image from $CACHE_TAR"
+            docker load -i "$CACHE_TAR"
+          fi
+
+          if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            echo "Pulling $IMAGE"
+            docker pull "$IMAGE"
+            if [ "$TAG" != "latest" ]; then
+              echo "Saving $IMAGE to cache tarball"
+              mkdir -p /tmp/.docker-cache
+              docker save "$IMAGE" -o "$CACHE_TAR"
+            fi
+          else
+            echo "Image $IMAGE already available locally."
+          fi
+
       - name: Run Toucan container and build site
         run: |
           # Build the optional target argument
